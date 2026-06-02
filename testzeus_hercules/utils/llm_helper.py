@@ -157,6 +157,9 @@ def convert_model_config_to_autogen_format(
         "api_key": model_config.get("api_key") or model_config.get("model_api_key"),
         "base_url": model_config.get("base_url") or model_config.get("model_base_url"),
         "api_type": model_config.get("api_type") or model_config.get("model_api_type"),
+        "client_host": model_config.get("client_host") or model_config.get("model_client_host"),
+        "native_tool_calls": model_config.get("native_tool_calls") or model_config.get("model_native_tool_calls"),
+        "hide_tools": model_config.get("hide_tools") or model_config.get("model_hide_tools"),
     }
     
     # Remove None values
@@ -202,16 +205,17 @@ def create_multimodal_agent(
         # Base config
         final_llm_config: Dict[str, Any] = {"config_list": config_list, **adapted_llm_params}
 
-        # === Ensure API key is present at both levels ===
+        # === Ensure API key is present at both levels when the provider needs one ===
         import os
         api_key = model_cfg.get("api_key") or os.getenv("LLM_MODEL_API_KEY")
+        api_type = (model_cfg.get("api_type") or model_cfg.get("model_api_type") or "").lower()
         if api_key:
             # Ensure API key is in the config_list
             if config_list and len(config_list) > 0:
                 config_list[0]["api_key"] = api_key
             # Also add it at the top level for autogen compatibility
             final_llm_config["api_key"] = api_key
-        else:
+        elif api_type != "ollama":
             raise ValueError("OPENAI_API_KEY is missing. Please set it in your environment.")
 
         # === Merge caller overrides (if any) ===
