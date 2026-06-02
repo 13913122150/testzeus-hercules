@@ -76,6 +76,7 @@ class AgentsLLMConfig:
             "model_name": "model",
             "model_api_key": "api_key",
             "model_base_url": "base_url",
+            "model_default_headers": "default_headers",
             "model_client_host": "client_host",
             "model_native_tool_calls": "native_tool_calls",
             "model_hide_tools": "hide_tools",

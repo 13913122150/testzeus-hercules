@@ -24,6 +24,7 @@ class ModelConfig(TypedDict, total=False):
     model_name: str
     model_api_key: Optional[str]
     model_base_url: Optional[str]
+    model_default_headers: Optional[Dict[str, str]]
     model_api_type: Optional[ModelAPIType]
     model_api_version: Optional[str]
     model_project_id: Optional[str]
@@ -80,6 +81,7 @@ ENV_TO_MODEL_CONFIG_MAPPING = {
     "LLM_MODEL_NAME": "model_name",
     "LLM_MODEL_API_KEY": "model_api_key",
     "LLM_MODEL_BASE_URL": "model_base_url",
+    "LLM_MODEL_DEFAULT_HEADERS": "model_default_headers",
     "LLM_MODEL_API_TYPE": "model_api_type",
     "LLM_MODEL_API_VERSION": "model_api_version",
     "LLM_MODEL_PROJECT_ID": "model_project_id",

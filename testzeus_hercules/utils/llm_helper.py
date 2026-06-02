@@ -156,6 +156,7 @@ def convert_model_config_to_autogen_format(
         "model": model_config.get("model") or model_config.get("model_name"),
         "api_key": model_config.get("api_key") or model_config.get("model_api_key"),
         "base_url": model_config.get("base_url") or model_config.get("model_base_url"),
+        "default_headers": model_config.get("default_headers") or model_config.get("model_default_headers"),
         "api_type": model_config.get("api_type") or model_config.get("model_api_type"),
         "client_host": model_config.get("client_host") or model_config.get("model_client_host"),
         "native_tool_calls": model_config.get("native_tool_calls") or model_config.get("model_native_tool_calls"),
@@ -192,10 +193,6 @@ def build_autogen_llm_config(
         "config_list": model_config_list,
         **top_level_params,
     }
-
-    api_key = model_config_list[0].get("api_key") if model_config_list else None
-    if api_key:
-        llm_config["api_key"] = api_key
 
     return llm_config
 
