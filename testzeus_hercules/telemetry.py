@@ -194,9 +194,20 @@ def register_shutdown() -> None:
     async def shutdown_wrapper():
         await send_message_to_sentry()
 
-    def on_shutdown():
-        # Schedule shutdown_wrapper to be run asynchronously
-        asyncio.create_task(shutdown_wrapper())
+    def on_shutdown(signum=None, _frame=None):
+        try:
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                asyncio.run(shutdown_wrapper())
+            else:
+                loop.create_task(shutdown_wrapper())
+        except Exception as e:
+            print(f"Error during shutdown telemetry: {e}")
+
+        if signum == signal.SIGINT:
+            raise KeyboardInterrupt
+        raise SystemExit(128 + int(signum or 0))
 
     # loop = asyncio.get_event_loop()
     signal.signal(signal.SIGTERM, on_shutdown)
