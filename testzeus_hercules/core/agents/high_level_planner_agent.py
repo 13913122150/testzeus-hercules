@@ -11,6 +11,7 @@ from testzeus_hercules.core.memory.static_ltm import get_user_ltm
 from testzeus_hercules.core.post_process_responses import (
     final_reply_callback_planner_agent as print_message_as_planner,  # type: ignore
 )
+from testzeus_hercules.utils.llm_helper import build_autogen_llm_config
 from testzeus_hercules.utils.logger import logger
 
 
@@ -266,18 +267,7 @@ Available Test Data: $basic_test_information
         system_message = system_message + "\n" + f"Current timestamp is {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         logger.info(f"Planner agent using model: {model_config_list[0]['model']}")
 
-        # Ensure API key is available at both levels for autogen compatibility
-        api_key = model_config_list[0].get('api_key') if model_config_list else None
-        
-        # Create the llm_config with API key at both levels
-        llm_config = {
-            "config_list": model_config_list,
-            **llm_config_params,  # unpack all the name value pairs in llm_config_params as is
-        }
-        
-        # Add API key at the top level if it exists
-        if api_key:
-            llm_config["api_key"] = api_key
+        llm_config = build_autogen_llm_config(model_config_list, llm_config_params)
 
         self.agent = autogen.AssistantAgent(
             name="planner_agent",

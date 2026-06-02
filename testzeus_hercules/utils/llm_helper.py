@@ -173,6 +173,33 @@ def convert_model_config_to_autogen_format(
     return autogen.config_list_from_json(env_or_file=temp_file_path)
 
 
+def build_autogen_llm_config(
+    model_config_list: list[dict[str, Any]],
+    llm_config_params: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Build an Autogen llm_config without duplicating model provider fields.
+
+    Provider-specific fields such as model/api_type/client_host belong inside
+    config_list. Supplying a top-level model alongside config_list can make
+    Autogen register an extra default OpenAI client.
+    """
+    top_level_params = {
+        key: value
+        for key, value in (llm_config_params or {}).items()
+        if value is not None and key != "model"
+    }
+    llm_config: Dict[str, Any] = {
+        "config_list": model_config_list,
+        **top_level_params,
+    }
+
+    api_key = model_config_list[0].get("api_key") if model_config_list else None
+    if api_key:
+        llm_config["api_key"] = api_key
+
+    return llm_config
+
+
 
 def create_multimodal_agent(
     name: str,
@@ -202,9 +229,6 @@ def create_multimodal_agent(
         # Convert model config to autogen format
         config_list = convert_model_config_to_autogen_format(model_cfg)
 
-        # Base config
-        final_llm_config: Dict[str, Any] = {"config_list": config_list, **adapted_llm_params}
-
         # === Ensure API key is present at both levels when the provider needs one ===
         import os
         api_key = model_cfg.get("api_key") or os.getenv("LLM_MODEL_API_KEY")
@@ -218,9 +242,12 @@ def create_multimodal_agent(
         elif api_type != "ollama":
             raise ValueError("OPENAI_API_KEY is missing. Please set it in your environment.")
 
+        # Base config
+        final_llm_config = build_autogen_llm_config(config_list, adapted_llm_params)
+
         # === Merge caller overrides (if any) ===
         if llm_config:
-            final_llm_config.update(llm_config)
+            final_llm_config.update({k: v for k, v in llm_config.items() if k not in {"config_list", "model"} and v is not None})
 
         # === Create singleton agent ===
         create_multimodal_agent._instance = MultimodalConversableAgent(

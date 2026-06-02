@@ -4,7 +4,7 @@ from typing import Any
 
 from testzeus_hercules.config import get_global_conf
 from testzeus_hercules.core.agents.base_nav_agent import BaseNavAgent
-from testzeus_hercules.utils.llm_helper import MultimodalConversableAgent
+from testzeus_hercules.utils.llm_helper import MultimodalConversableAgent, build_autogen_llm_config
 from testzeus_hercules.utils.logger import logger
 
 
@@ -48,10 +48,7 @@ class MultimodalBaseNavAgent(BaseNavAgent):
         self.agent = MultimodalConversableAgent(
             name=agent_name,
             system_message=system_message,
-            llm_config={
-                "config_list": model_config_list,
-                **llm_config_params,  # unpack all the name value pairs in llm_config_params as is
-            },
+            llm_config=build_autogen_llm_config(model_config_list, llm_config_params),
             human_input_mode="NEVER",
         )
 

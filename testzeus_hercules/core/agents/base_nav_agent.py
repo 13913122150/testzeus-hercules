@@ -9,6 +9,7 @@ from testzeus_hercules.config import get_global_conf
 from testzeus_hercules.core.memory.static_ltm import get_user_ltm
 from testzeus_hercules.core.tools.tool_registry import tool_registry
 from testzeus_hercules.telemetry import EventData, EventType, add_event
+from testzeus_hercules.utils.llm_helper import build_autogen_llm_config
 from testzeus_hercules.utils.logger import logger
 
 
@@ -47,18 +48,7 @@ class BaseNavAgent:
             system_message = Template(system_message).substitute(basic_test_information=user_ltm)
         logger.info(f"Nav agent {agent_name} using model: {model_config_list[0]['model']}")
 
-        # Ensure API key is available at both levels for autogen compatibility
-        api_key = model_config_list[0].get('api_key') if model_config_list else None
-        
-        # Create the llm_config with API key at both levels
-        llm_config = {
-            "config_list": model_config_list,
-            **llm_config_params,  # unpack all the name value pairs in llm_config_params as is
-        }
-        
-        # Add API key at the top level if it exists
-        if api_key:
-            llm_config["api_key"] = api_key
+        llm_config = build_autogen_llm_config(model_config_list, llm_config_params)
 
         # def print_incoming_message(
         #     recipient, messages, sender, config
